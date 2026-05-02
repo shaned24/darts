@@ -29,6 +29,7 @@ button,
 input,
 select {
   font: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button {
@@ -578,6 +579,9 @@ option {
   width: 100%;
   height: 100%;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .board-status {
@@ -658,6 +662,7 @@ option {
   stroke: #ece8dd;
   stroke-width: 1.1;
   transition: filter 120ms ease, opacity 120ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .miss-target {
@@ -665,8 +670,16 @@ option {
   stroke: none;
 }
 
-.segment:hover,
+.segment:hover {
+  filter: brightness(1.16);
+  outline: none;
+}
+
 .segment:focus {
+  outline: none;
+}
+
+.segment:focus-visible {
   filter: brightness(1.16);
   outline: none;
 }
@@ -713,6 +726,31 @@ option {
   stroke: rgba(22, 22, 21, 0.58);
   stroke-linejoin: round;
   stroke-width: 3px;
+}
+
+.hit-marker {
+  fill: #ffffff;
+  pointer-events: none;
+  stroke: rgba(23, 33, 28, 0.85);
+  stroke-width: 5;
+  animation: marker-pop 1400ms ease both;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
+}
+
+@keyframes marker-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  12%,
+  72% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
 }
 
 .outer-wire {

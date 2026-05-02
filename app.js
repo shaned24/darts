@@ -8,6 +8,7 @@
     boardFrame: document.querySelector(".board-frame"),
     boardSegments: document.getElementById("boardSegments"),
     boardLabels: document.getElementById("boardLabels"),
+    hitMarkerLayer: document.getElementById("hitMarkerLayer"),
     scoreFlash: document.getElementById("scoreFlash"),
     boardStatusMeta: document.getElementById("boardStatusMeta"),
     boardStatusPlayer: document.getElementById("boardStatusPlayer"),
@@ -72,6 +73,7 @@
   let state = loadState();
   let flashTimer = null;
   let feedbackTimer = null;
+  let markerTimer = null;
 
   function createPlayer(name, score) {
     return { name, score, legsWon: 0, darts: 0, turns: [] };
@@ -397,6 +399,7 @@
 
   function flashDart(dart) {
     showFlash(`${shortDartLabel(dart)} · ${dart.value}`, 1800);
+    showHitMarker(dart);
   }
 
   function flashMessage(message) {
@@ -434,6 +437,32 @@
       el.boardFrame.classList.remove("feedback-hit", "feedback-bust", "feedback-win");
       if (card) card.classList.remove("feedback-bust", "feedback-win");
     }, 650);
+  }
+
+  function showHitMarker(dart) {
+    window.clearTimeout(markerTimer);
+    el.hitMarkerLayer.innerHTML = "";
+    if (dart.number === 0 || dart.multiplier === 0) return;
+
+    const marker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const angle = numbers.indexOf(dart.number) * 18;
+    const radius = markerRadius(dart);
+    const position = dart.number === 25 ? { x: 0, y: 0 } : polar(radius, angle);
+    marker.setAttribute("cx", position.x.toFixed(3));
+    marker.setAttribute("cy", position.y.toFixed(3));
+    marker.setAttribute("r", dart.number === 25 ? (dart.value === 50 ? "18" : "30") : "18");
+    marker.setAttribute("class", "hit-marker");
+    el.hitMarkerLayer.appendChild(marker);
+
+    markerTimer = window.setTimeout(() => {
+      el.hitMarkerLayer.innerHTML = "";
+    }, 1400);
+  }
+
+  function markerRadius(dart) {
+    if (dart.multiplier === 2) return 232;
+    if (dart.multiplier === 3) return 144;
+    return 188;
   }
 
   function undoLastTurn() {
