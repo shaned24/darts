@@ -318,10 +318,6 @@ option {
   animation: card-shake 420ms ease both;
 }
 
-.scorecard.feedback-win {
-  animation: card-win 650ms ease both;
-}
-
 .scorecard h3 {
   margin: 0 0 6px;
   overflow: hidden;
@@ -446,16 +442,8 @@ option {
   filter: drop-shadow(0 28px 42px rgba(10, 16, 14, 0.22));
 }
 
-.board-frame.feedback-hit {
-  animation: board-hit 280ms ease both;
-}
-
 .board-frame.feedback-bust {
   animation: board-bust 420ms ease both;
-}
-
-.board-frame.feedback-win {
-  animation: board-win 650ms ease both;
 }
 
 .score-flash {
@@ -497,19 +485,6 @@ option {
   }
 }
 
-@keyframes board-hit {
-  0% {
-    transform: scale(1);
-  }
-  45% {
-    transform: scale(1.018);
-    filter: drop-shadow(0 28px 42px rgba(10, 16, 14, 0.22)) drop-shadow(0 0 18px rgba(28, 122, 125, 0.42));
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
 @keyframes board-bust {
   0%,
   100% {
@@ -530,19 +505,6 @@ option {
   }
 }
 
-@keyframes board-win {
-  0% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(1.026);
-    filter: drop-shadow(0 28px 42px rgba(10, 16, 14, 0.22)) drop-shadow(0 0 26px rgba(15, 106, 67, 0.62));
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
 @keyframes card-shake {
   0%,
   100% {
@@ -557,20 +519,6 @@ option {
   }
   66% {
     transform: translateX(-3px);
-  }
-}
-
-@keyframes card-win {
-  0% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.018);
-    border-color: var(--green);
-    box-shadow: 0 0 0 4px rgba(15, 106, 67, 0.2), 0 10px 26px rgba(15, 106, 67, 0.16);
-  }
-  100% {
-    transform: scale(1);
   }
 }
 
@@ -928,7 +876,7 @@ option {
 
 @media (max-height: 560px) and (orientation: landscape) {
   .app-shell {
-    grid-template-columns: 330px minmax(280px, 1fr) 280px;
+    grid-template-columns: 330px minmax(280px, 1fr);
     gap: 10px;
     padding: 10px;
   }
@@ -977,6 +925,21 @@ option {
   .turn-panel,
   .info-view {
     padding: 10px;
+  }
+
+  .rules-panel {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .rules-panel .tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .history-list {
+    max-height: 34vh;
   }
 
   .rules-list {

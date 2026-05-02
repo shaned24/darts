@@ -155,7 +155,7 @@
     path.setAttribute("tabindex", "0");
     path.setAttribute("role", "button");
     path.setAttribute("aria-label", dart.label);
-    path.addEventListener("click", () => addDart(dart));
+    path.addEventListener("click", (event) => addDart(dart, event));
     path.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -173,7 +173,7 @@
       { type: "double", inner: 220, outer: 244, multiplier: 2 },
       { type: "outer-single", inner: 158, outer: 220, multiplier: 1 },
       { type: "triple", inner: 130, outer: 158, multiplier: 3 },
-      { type: "inner-single", inner: 16, outer: 130, multiplier: 1 }
+      { type: "inner-single", inner: 24, outer: 130, multiplier: 1 }
     ];
 
     numbers.forEach((number, index) => {
@@ -196,8 +196,8 @@
       addNumberLabel(number, middle);
     });
 
-    addCircleSegment(16, "bull-outer", { value: 25, multiplier: 1, number: 25, label: "Outer bull, 25" });
-    addCircleSegment(7, "bull-inner", { value: 50, multiplier: 2, number: 25, label: "Bullseye, 50" });
+    addCircleSegment(24, "bull-outer", { value: 25, multiplier: 1, number: 25, label: "Outer bull, 25" });
+    addCircleSegment(11, "bull-inner", { value: 50, multiplier: 2, number: 25, label: "Bullseye, 50" });
   }
 
   function addMissTarget() {
@@ -210,7 +210,7 @@
     rect.setAttribute("role", "button");
     rect.setAttribute("tabindex", "0");
     rect.setAttribute("aria-label", "Miss");
-    rect.addEventListener("click", () => addDart({ value: 0, multiplier: 0, number: 0, label: "Miss" }));
+    rect.addEventListener("click", (event) => addDart({ value: 0, multiplier: 0, number: 0, label: "Miss" }, event));
     rect.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -237,7 +237,7 @@
     circle.setAttribute("tabindex", "0");
     circle.setAttribute("role", "button");
     circle.setAttribute("aria-label", dart.label);
-    circle.addEventListener("click", () => addDart(dart));
+    circle.addEventListener("click", (event) => addDart(dart, event));
     circle.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -257,7 +257,7 @@
     return state.matchStarted && state.legWinner === null && state.matchWinner === null;
   }
 
-  function addDart(dart) {
+  function addDart(dart, event) {
     clearStatus();
     if (!canScore()) {
       setStatus(state.matchStarted ? "Start the next leg to continue." : "Start the match first.");
@@ -269,8 +269,7 @@
     }
     state.currentDarts.push(dart);
     vibrate(35);
-    playVisualFeedback("hit", state.currentPlayer);
-    flashDart(dart);
+    flashDart(dart, event);
     if (shouldAutoSubmitTurn()) {
       submitTurn();
       return;
@@ -332,7 +331,6 @@
 
     if (!bust && nextScore === 0) {
       vibrate([70, 35, 110]);
-      playVisualFeedback("win", state.currentPlayer);
       player.legsWon += 1;
       turn.legWon = true;
       state.legWinner = state.currentPlayer;
@@ -397,19 +395,20 @@
     saveAndRender();
   }
 
-  function flashDart(dart) {
-    showFlash(`${shortDartLabel(dart)} · ${dart.value}`, 1800);
-    showHitMarker(dart);
+  function flashDart(dart, event) {
+    showFlash(`${shortDartLabel(dart)} · ${dart.value}`, 1800, event);
+    showHitMarker(dart, event);
   }
 
   function flashMessage(message) {
     showFlash(message, 1150);
   }
 
-  function showFlash(message, duration) {
+  function showFlash(message, duration, event) {
     window.clearTimeout(flashTimer);
     el.scoreFlash.textContent = message;
     el.scoreFlash.style.setProperty("--flash-duration", `${duration}ms`);
+    positionFlash(event);
     el.scoreFlash.classList.remove("show");
     void el.scoreFlash.offsetWidth;
     el.scoreFlash.classList.add("show");
@@ -418,11 +417,25 @@
     }, duration);
   }
 
+  function positionFlash(event) {
+    if (!event) {
+      el.scoreFlash.style.left = "50%";
+      el.scoreFlash.style.top = "50%";
+      return;
+    }
+
+    const frame = el.boardFrame.getBoundingClientRect();
+    const x = clampNumber(event.clientX - frame.left + 46, 74, frame.width - 74);
+    const y = clampNumber(event.clientY - frame.top - 48, 34, frame.height - 34);
+    el.scoreFlash.style.left = `${x}px`;
+    el.scoreFlash.style.top = `${y}px`;
+  }
+
   function playVisualFeedback(type, playerIndex) {
     window.clearTimeout(feedbackTimer);
-    el.boardFrame.classList.remove("feedback-hit", "feedback-bust", "feedback-win");
-    document.querySelectorAll(".scorecard.feedback-bust, .scorecard.feedback-win").forEach((card) => {
-      card.classList.remove("feedback-bust", "feedback-win");
+    el.boardFrame.classList.remove("feedback-bust");
+    document.querySelectorAll(".scorecard.feedback-bust").forEach((card) => {
+      card.classList.remove("feedback-bust");
     });
 
     void el.boardFrame.offsetWidth;
@@ -434,23 +447,21 @@
     }
 
     feedbackTimer = window.setTimeout(() => {
-      el.boardFrame.classList.remove("feedback-hit", "feedback-bust", "feedback-win");
-      if (card) card.classList.remove("feedback-bust", "feedback-win");
+      el.boardFrame.classList.remove("feedback-bust");
+      if (card) card.classList.remove("feedback-bust");
     }, 650);
   }
 
-  function showHitMarker(dart) {
+  function showHitMarker(dart, event) {
     window.clearTimeout(markerTimer);
     el.hitMarkerLayer.innerHTML = "";
-    if (dart.number === 0 || dart.multiplier === 0) return;
+    if (!event) return;
 
     const marker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    const angle = numbers.indexOf(dart.number) * 18;
-    const radius = markerRadius(dart);
-    const position = dart.number === 25 ? { x: 0, y: 0 } : polar(radius, angle);
+    const position = svgPointFromEvent(event);
     marker.setAttribute("cx", position.x.toFixed(3));
     marker.setAttribute("cy", position.y.toFixed(3));
-    marker.setAttribute("r", dart.number === 25 ? (dart.value === 50 ? "18" : "30") : "18");
+    marker.setAttribute("r", "16");
     marker.setAttribute("class", "hit-marker");
     el.hitMarkerLayer.appendChild(marker);
 
@@ -459,10 +470,12 @@
     }, 1400);
   }
 
-  function markerRadius(dart) {
-    if (dart.multiplier === 2) return 232;
-    if (dart.multiplier === 3) return 144;
-    return 188;
+  function svgPointFromEvent(event) {
+    const svg = event.currentTarget.ownerSVGElement;
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    return point.matrixTransform(svg.getScreenCTM().inverse());
   }
 
   function undoLastTurn() {
