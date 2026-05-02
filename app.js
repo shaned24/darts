@@ -173,7 +173,7 @@
       { type: "double", inner: 220, outer: 244, multiplier: 2 },
       { type: "outer-single", inner: 158, outer: 220, multiplier: 1 },
       { type: "triple", inner: 130, outer: 158, multiplier: 3 },
-      { type: "inner-single", inner: 24, outer: 130, multiplier: 1 }
+      { type: "inner-single", inner: 34, outer: 130, multiplier: 1 }
     ];
 
     numbers.forEach((number, index) => {
@@ -196,8 +196,8 @@
       addNumberLabel(number, middle);
     });
 
-    addCircleSegment(24, "bull-outer", { value: 25, multiplier: 1, number: 25, label: "Outer bull, 25" });
-    addCircleSegment(11, "bull-inner", { value: 50, multiplier: 2, number: 25, label: "Bullseye, 50" });
+    addCircleSegment(34, "bull-outer", { value: 25, multiplier: 1, number: 25, label: "Outer bull, 25" });
+    addCircleSegment(16, "bull-inner", { value: 50, multiplier: 2, number: 25, label: "Bullseye, 50" });
   }
 
   function addMissTarget() {
