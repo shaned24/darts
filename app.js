@@ -23,6 +23,7 @@
     historyList: document.getElementById("historyList"),
     matchSummary: document.getElementById("matchSummary"),
     formatHint: document.getElementById("formatHint"),
+    hapticsHint: document.getElementById("hapticsHint"),
     startScore: document.getElementById("startScore"),
     targetLegs: document.getElementById("targetLegs"),
     finishRule: document.getElementById("finishRule"),
@@ -263,7 +264,7 @@
       return;
     }
     state.currentDarts.push(dart);
-    vibrate(18);
+    vibrate(35);
     flashDart(dart);
     if (shouldAutoSubmitTurn()) {
       submitTurn();
@@ -325,7 +326,7 @@
     player.turns.push(turn);
 
     if (!bust && nextScore === 0) {
-      vibrate([35, 25, 55]);
+      vibrate([70, 35, 110]);
       player.legsWon += 1;
       turn.legWon = true;
       state.legWinner = state.currentPlayer;
@@ -338,7 +339,7 @@
         setStatus(`${player.name} wins leg ${state.legNumber}.`);
       }
     } else {
-      if (bust) vibrate([20, 20, 20]);
+      if (bust) vibrate([45, 35, 45]);
       state.currentPlayer = nextPlayerIndex(state.currentPlayer);
       setStatus(`Next: ${state.players[state.currentPlayer].name}`);
     }
@@ -369,7 +370,7 @@
     clearStatus();
     if (state.currentDarts.length > 0) {
       const undone = state.currentDarts.pop();
-      vibrate(12);
+      vibrate(25);
       flashMessage(`Undone: ${shortDartLabel(undone)}`);
       saveAndRender();
       return;
@@ -382,7 +383,7 @@
     }
     const undone = last.darts[last.darts.length - 1];
     restoreTurn(last, true);
-    vibrate(12);
+    vibrate(25);
     flashMessage(`Undone: ${shortDartLabel(undone)}`);
     saveAndRender();
   }
@@ -597,6 +598,7 @@
     el.gamePage.classList.toggle("hidden", !state.matchStarted);
     el.matchSummary.textContent = `${state.startScore} · ${formatText()}`;
     el.formatHint.textContent = formatText();
+    el.hapticsHint.textContent = hasHaptics() ? "Available" : "Not supported";
     el.startScore.value = String(state.startScore);
     el.targetLegs.value = String(state.targetLegs);
     el.finishRule.value = state.finishRule;
@@ -828,7 +830,12 @@
   }
 
   function vibrate(pattern) {
-    if (navigator.vibrate) navigator.vibrate(pattern);
+    if (!hasHaptics()) return false;
+    return navigator.vibrate(pattern);
+  }
+
+  function hasHaptics() {
+    return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
   }
 
   function setStatus(message) {
