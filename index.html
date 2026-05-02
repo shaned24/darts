@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Darts Scorer</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <section class="setup-page" id="setupPage" aria-label="Match setup">
+      <div class="setup-card">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Darts scorer</p>
+            <h1>Match Setup</h1>
+          </div>
+        </header>
+
+        <div class="setup-grid">
+          <label>
+            <span>Starting score</span>
+            <select id="startScore">
+              <option value="301">301</option>
+              <option value="501" selected>501</option>
+              <option value="701">701</option>
+            </select>
+          </label>
+          <label>
+            <span>First to legs</span>
+            <select id="targetLegs">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
+          </label>
+          <div class="format-hint">
+            <span>Format</span>
+            <strong id="formatHint">Best of 1</strong>
+          </div>
+          <label>
+            <span>Finish</span>
+            <select id="finishRule">
+              <option value="double" selected>Double out</option>
+              <option value="single">Single out</option>
+            </select>
+          </label>
+        </div>
+
+        <section class="player-manager" aria-label="Player setup">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Players</p>
+              <h2>Lineup</h2>
+            </div>
+            <button id="addPlayerBtn" type="button">Add player</button>
+          </div>
+          <div class="player-list" id="playerList"></div>
+          <div class="match-actions">
+            <button id="startMatchBtn" class="primary-button" type="button">Start match</button>
+          </div>
+        </section>
+
+        <section class="match-log" aria-label="Tracked matches">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Tracked</p>
+              <h2>Recent Matches</h2>
+            </div>
+          </div>
+          <ol id="matchLogList" class="match-log-list"></ol>
+        </section>
+
+        <section class="match-log" aria-label="Player stats">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Stats</p>
+              <h2>Player Records</h2>
+            </div>
+          </div>
+          <div id="playerStatsList" class="stats-list"></div>
+        </section>
+      </div>
+    </section>
+
+    <main class="app-shell hidden" id="gamePage">
+      <section class="match-panel" aria-label="Match controls and scores">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="matchSummary">501 darts</p>
+            <h1>Darts Scorer</h1>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="undoBtn" type="button" title="Undo last turn" aria-label="Undo last turn">
+              <span aria-hidden="true">↶</span>
+            </button>
+            <button class="icon-button" id="resetBtn" type="button" title="Reset match" aria-label="Reset match">
+              <span aria-hidden="true">⟲</span>
+            </button>
+            <button class="icon-button" id="nextLegBtn" type="button" title="Next leg" aria-label="Next leg">
+              <span aria-hidden="true">▶</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="scorecards" id="scorecards" aria-live="polite"></div>
+
+        <section class="turn-panel" aria-label="Current turn">
+          <div class="turn-header">
+            <div>
+              <p class="eyebrow">At the oche</p>
+              <h2 id="currentPlayer">Player 1</h2>
+            </div>
+            <div class="turn-total">
+              <span>Turn</span>
+              <strong id="turnTotal">0</strong>
+            </div>
+          </div>
+
+          <div class="dart-list" id="dartList"></div>
+
+          <div class="number-entry" aria-label="Manual score entry">
+            <input id="manualScore" inputmode="numeric" pattern="[0-9]*" placeholder="Score">
+            <button id="addManualBtn" type="button">Add</button>
+          </div>
+
+          <div class="turn-actions">
+            <button id="undoDartBtn" type="button">Undo dart</button>
+            <button id="clearTurnBtn" type="button">Clear turn</button>
+            <button id="missBtn" type="button">Miss</button>
+            <button id="submitTurnBtn" class="primary-button" type="button">Submit turn</button>
+          </div>
+          <p class="status-line" id="statusLine" role="status"></p>
+        </section>
+      </section>
+
+      <section class="board-panel" aria-label="Interactive dart board">
+        <div class="board-frame">
+          <button id="scoreFlash" class="score-flash" type="button" aria-live="polite"></button>
+          <svg id="dartboard" class="dartboard" viewBox="-280 -280 560 560" role="img" aria-labelledby="boardTitle boardDesc">
+            <title id="boardTitle">Interactive dart board</title>
+            <desc id="boardDesc">Select any scoring segment to add a dart to the current turn.</desc>
+            <g id="boardSegments"></g>
+            <g id="boardLabels" aria-hidden="true"></g>
+            <circle class="wire outer-wire" r="244"></circle>
+            <circle class="wire" r="154"></circle>
+            <circle class="wire" r="96"></circle>
+            <circle class="wire" r="16"></circle>
+            <circle class="wire" r="7"></circle>
+          </svg>
+        </div>
+        <div class="board-status" aria-live="polite">
+          <span id="boardStatusMeta">Match setup</span>
+          <strong id="boardStatusPlayer">Set up players</strong>
+          <span id="boardStatusTurn">Turn 0</span>
+        </div>
+        <div class="board-checkout">
+          <span>Checkout</span>
+          <strong id="boardCheckoutHint">No finish yet</strong>
+        </div>
+        <button id="boardNextLegBtn" class="board-next-leg primary-button" type="button">Start next leg</button>
+        <div id="matchCompleteActions" class="match-complete-actions hidden">
+          <button id="rematchBtn" class="primary-button" type="button">Rematch</button>
+          <button id="backToSetupBtn" type="button">Back to setup</button>
+        </div>
+      </section>
+
+      <section class="rules-panel" aria-label="Rules and checkout help">
+        <div class="tabs" role="tablist" aria-label="Information">
+          <button id="tabRules" class="tab active" type="button" role="tab" aria-selected="true">Rules</button>
+          <button id="tabHistory" class="tab" type="button" role="tab" aria-selected="false">Turns</button>
+        </div>
+        <div id="rulesView" class="info-view">
+          <h2>Rules</h2>
+          <dl class="rules-list">
+            <dt>Objective</dt>
+            <dd>Race from the selected starting score to exactly zero.</dd>
+            <dt>Legs</dt>
+            <dd>A leg win adds one to the match score. First player to the selected leg target wins the match.</dd>
+            <dt>Double out</dt>
+            <dd>The winning dart must land in a double segment or the bullseye.</dd>
+            <dt>Bust</dt>
+            <dd>A turn busts if it drops below zero, leaves one in double out, or reaches zero without a legal finish.</dd>
+            <dt>Turn limit</dt>
+            <dd>Three darts can be entered per turn from the board, outside-board misses, or manual entry.</dd>
+          </dl>
+          <div class="checkout-box">
+            <span>Suggested checkout</span>
+            <strong id="checkoutHint">No finish yet</strong>
+          </div>
+        </div>
+        <div id="historyView" class="info-view hidden">
+          <h2>Turn History</h2>
+          <ol id="historyList" class="history-list"></ol>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
