@@ -5,6 +5,7 @@
   const el = {
     setupPage: document.getElementById("setupPage"),
     gamePage: document.getElementById("gamePage"),
+    boardFrame: document.querySelector(".board-frame"),
     boardSegments: document.getElementById("boardSegments"),
     boardLabels: document.getElementById("boardLabels"),
     scoreFlash: document.getElementById("scoreFlash"),
@@ -70,6 +71,7 @@
 
   let state = loadState();
   let flashTimer = null;
+  let feedbackTimer = null;
 
   function createPlayer(name, score) {
     return { name, score, legsWon: 0, darts: 0, turns: [] };
@@ -166,10 +168,10 @@
     el.boardLabels.innerHTML = "";
     addMissTarget();
     const rings = [
-      { type: "double", inner: 226, outer: 244, multiplier: 2 },
-      { type: "outer-single", inner: 154, outer: 226, multiplier: 1 },
-      { type: "triple", inner: 136, outer: 154, multiplier: 3 },
-      { type: "inner-single", inner: 16, outer: 136, multiplier: 1 }
+      { type: "double", inner: 220, outer: 244, multiplier: 2 },
+      { type: "outer-single", inner: 158, outer: 220, multiplier: 1 },
+      { type: "triple", inner: 130, outer: 158, multiplier: 3 },
+      { type: "inner-single", inner: 16, outer: 130, multiplier: 1 }
     ];
 
     numbers.forEach((number, index) => {
@@ -217,7 +219,7 @@
   }
 
   function addNumberLabel(number, angle) {
-    const position = polar(207, angle);
+    const position = polar(196, angle);
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     text.setAttribute("x", position.x.toFixed(3));
     text.setAttribute("y", position.y.toFixed(3));
@@ -265,6 +267,7 @@
     }
     state.currentDarts.push(dart);
     vibrate(35);
+    playVisualFeedback("hit", state.currentPlayer);
     flashDart(dart);
     if (shouldAutoSubmitTurn()) {
       submitTurn();
@@ -327,6 +330,7 @@
 
     if (!bust && nextScore === 0) {
       vibrate([70, 35, 110]);
+      playVisualFeedback("win", state.currentPlayer);
       player.legsWon += 1;
       turn.legWon = true;
       state.legWinner = state.currentPlayer;
@@ -339,7 +343,10 @@
         setStatus(`${player.name} wins leg ${state.legNumber}.`);
       }
     } else {
-      if (bust) vibrate([45, 35, 45]);
+      if (bust) {
+        vibrate([45, 35, 45]);
+        playVisualFeedback("bust", state.currentPlayer);
+      }
       state.currentPlayer = nextPlayerIndex(state.currentPlayer);
       setStatus(`Next: ${state.players[state.currentPlayer].name}`);
     }
@@ -406,6 +413,27 @@
     flashTimer = window.setTimeout(() => {
       el.scoreFlash.classList.remove("show");
     }, duration);
+  }
+
+  function playVisualFeedback(type, playerIndex) {
+    window.clearTimeout(feedbackTimer);
+    el.boardFrame.classList.remove("feedback-hit", "feedback-bust", "feedback-win");
+    document.querySelectorAll(".scorecard.feedback-bust, .scorecard.feedback-win").forEach((card) => {
+      card.classList.remove("feedback-bust", "feedback-win");
+    });
+
+    void el.boardFrame.offsetWidth;
+    el.boardFrame.classList.add(`feedback-${type}`);
+
+    const card = el.scorecards.querySelector(`[data-player-index="${playerIndex}"]`);
+    if (card && type !== "hit") {
+      card.classList.add(`feedback-${type}`);
+    }
+
+    feedbackTimer = window.setTimeout(() => {
+      el.boardFrame.classList.remove("feedback-hit", "feedback-bust", "feedback-win");
+      if (card) card.classList.remove("feedback-bust", "feedback-win");
+    }, 650);
   }
 
   function undoLastTurn() {
@@ -675,6 +703,7 @@
     state.players.forEach((player, index) => {
       const card = document.createElement("article");
       card.className = `scorecard${index === state.currentPlayer && canScore() ? " active" : ""}`;
+      card.dataset.playerIndex = String(index);
       const average = player.darts ? ((state.startScore - player.score) / player.darts * 3).toFixed(1) : "0.0";
       card.innerHTML = `
         <div>

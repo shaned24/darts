@@ -266,6 +266,8 @@ label span {
 
 input,
 select {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
   min-height: 42px;
   border: 1px solid var(--line);
@@ -273,6 +275,19 @@ select {
   background: #fff;
   color: var(--ink);
   padding: 0 11px;
+}
+
+select {
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 18px, calc(100% - 12px) 18px;
+  background-repeat: no-repeat;
+  background-size: 6px 6px, 6px 6px;
+  padding-right: 34px;
+}
+
+option {
+  background: #fff;
+  color: var(--ink);
 }
 
 .scorecards {
@@ -296,6 +311,14 @@ select {
 .scorecard.active {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(28, 122, 125, 0.15);
+}
+
+.scorecard.feedback-bust {
+  animation: card-shake 420ms ease both;
+}
+
+.scorecard.feedback-win {
+  animation: card-win 650ms ease both;
 }
 
 .scorecard h3 {
@@ -422,6 +445,18 @@ select {
   filter: drop-shadow(0 28px 42px rgba(10, 16, 14, 0.22));
 }
 
+.board-frame.feedback-hit {
+  animation: board-hit 280ms ease both;
+}
+
+.board-frame.feedback-bust {
+  animation: board-bust 420ms ease both;
+}
+
+.board-frame.feedback-win {
+  animation: board-win 650ms ease both;
+}
+
 .score-flash {
   position: absolute;
   z-index: 2;
@@ -458,6 +493,83 @@ select {
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.96);
+  }
+}
+
+@keyframes board-hit {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.018);
+    filter: drop-shadow(0 28px 42px rgba(10, 16, 14, 0.22)) drop-shadow(0 0 18px rgba(28, 122, 125, 0.42));
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes board-bust {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  18% {
+    transform: translateX(-8px);
+  }
+  36% {
+    transform: translateX(7px);
+    filter: drop-shadow(0 28px 42px rgba(10, 16, 14, 0.22)) drop-shadow(0 0 20px rgba(181, 37, 45, 0.46));
+  }
+  54% {
+    transform: translateX(-5px);
+  }
+  72% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes board-win {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.026);
+    filter: drop-shadow(0 28px 42px rgba(10, 16, 14, 0.22)) drop-shadow(0 0 26px rgba(15, 106, 67, 0.62));
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes card-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  22% {
+    transform: translateX(-6px);
+    border-color: var(--red);
+  }
+  44% {
+    transform: translateX(5px);
+  }
+  66% {
+    transform: translateX(-3px);
+  }
+}
+
+@keyframes card-win {
+  0% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.018);
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(15, 106, 67, 0.2), 0 10px 26px rgba(15, 106, 67, 0.16);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
